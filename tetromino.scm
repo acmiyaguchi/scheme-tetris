@@ -32,12 +32,17 @@
 (define (rot-clockwise tetra)
   (map 
     (lambda (pair)
-      (list (* (cdr pair) -1) (car pair)))
+      (cons (* (cdr pair) -1) (car pair)))
     tetra))
 
 ;;Rotates a block counterclockwise
 (define (rot-counterclockwise tetra)
   (map
     (lambda (pair)
-      (list (cdr pair) (* (car pair) -1)))
+      (cons (cdr pair) (* (car pair) -1)))
     tetra))
+
+(define (move tetra x y)
+  (map (lambda (coord)
+         (cons (+ (car coord) x) (+ (cdr coord) y)))
+       tetra))
