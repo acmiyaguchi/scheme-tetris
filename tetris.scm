@@ -31,8 +31,18 @@
         (mvwaddch win j i CELL_CHAR))))
   (wrefresh win))
 
-
-
+(define (update-state block disp area startx starty endx endy)
+  (map (lambda (coord)
+         ((unless (or (>= (car coord) endx)
+                       (>= (cdr coord) endy)
+                       (< (car coord) startx)
+                       (< (cdr coord) starty))
+           (let ([cell (array-ref area (car coord) (cdr coord))])
+             (display?-set! (display? cell) disp)
+             ;;TODO add in color information
+            ))))
+       block)
+  
 (define (main)
   ;;Settings for the terminal session
   (initscr)
@@ -56,16 +66,16 @@
         (tetra-display (stdscr) workarea STARTX STARTY ENDX ENDY)
         (let loop ((continue #t)) ;;Start the main game loop
           (unless (not continue)
-            (case (getch)
-              ((#\q) (set! continue #f))
-              )
-            (tetra-display (stdscr) workarea STARTX STARTY ENDX ENDY)
-            (loop continue))))
+            (let blockloop ([newpos (L-block)])
+              ;;(update-state newpos #t workarea STARTX STARTY ENDX ENDY)
+              (case (getch)
+                ((#\q) (set! continue #f))
+                  )
+                ;;(tetra-display (stdscr) workarea STARTX STARTY ENDX ENDY)
+                (loop continue)))))
   (echo)
   (nocbreak)
   (curs_set 1)
   (endwin))
 
 (main)
-
-
