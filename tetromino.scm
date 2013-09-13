@@ -44,26 +44,25 @@
 ;;Helper function of the rotate series of function
 ;;Takes in a block, and returns the coordinate list with subtracted offsets
 (define (calc-offset off ls)
-  (map (lambda (item)
-         (+ (car item) (car off))
-         (+ (cdr item) (cdr off)))
+  (map (lambda (item) (cons (+ (car item) (car off))
+                            (+ (cdr item) (cdr off))))
        ls))
 
 ;;Displace the block by modifying the current offsets
 (define (move-block tetra dx dy)
-    (set! (cadar tetra) (+ (cadar tetra) dx))
-    (set! (cddar tetra) (+ (cddar tetra) dy)))
+  (cons (+ (cadar tetra) dx)
+        (+ (cddar tetra) dy)))
 
 ;; Rotates a block clockwise
 (define (rot-cw tetra)
-  (cons (car tetra)
+  (list (car tetra)
         (map (lambda 
                (pair)(cons (* (cdr pair) -1) (car pair)))
              (block-coords tetra))))
 
 ;;Rotates a block counterclockwise
 (define (rot-ccw tetra)
-  (cons (car tetra)
+  (list (car tetra)
         (map(lambda (pair)
               (cons (cdr pair) (* (car pair) -1)))
           (block-coords tetra))))
