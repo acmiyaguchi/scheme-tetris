@@ -2,6 +2,9 @@
 
 (use ncurses srfi-25)
 
+;;For use when compiled
+;;(import tetromino)
+
 (declare (uses tetromino))
 (load "tetromino.scm")
 
@@ -93,5 +96,3 @@
   (nocbreak)
   (curs_set 1)
   (endwin))
-
-(main)

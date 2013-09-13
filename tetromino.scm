@@ -1,6 +1,9 @@
 ;;Tetromino library
 (declare (unit tetromino))
-(use ncurses)
+
+(module tetromino *
+        (import scheme chicken)
+        (use ncurses))
 
 ;;The tetromino block is a defined as a list structure
 ;;with the first half describing the current position on the grid 
