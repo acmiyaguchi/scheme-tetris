@@ -1,6 +1,8 @@
 (declare (block) (fixnum) (usual-integrations))
 
 (use ncurses srfi-25)
+
+(declare (uses tetromino))
 (load "tetromino.scm")
 
 ;; Tetris in scheme

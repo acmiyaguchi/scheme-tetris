@@ -1,5 +1,6 @@
-(use ncurses)
 ;;Tetromino library
+(declare (unit tetromino))
+(use ncurses)
 
 ;;The tetromino block is a defined as a list structure
 ;;with the first half describing the current position on the grid 
@@ -16,11 +17,11 @@
 
 ;;All coordinate pairs are in the positive xy plane, which starts 
 ;;from the upper left and goes to the bottom right of the screen.
-(
- ;;A template for creating the basic building tetromino block
- ;;TODO: Change the offset for a real game
- ;;
- define (make-tetromino color x1 y1 x2 y2 x3 y3 x4 y4)
+ 
+;;A template for creating the basic building tetromino block
+;;TODO: Change the offset for a real game
+;;
+(define (make-tetromino color x1 y1 x2 y2 x3 y3 x4 y4)
   (list (cons color (cons 0 0)) ;;associated metadata
         (list (cons x1 y1) 
               (cons x2 y2) 
