@@ -3,7 +3,7 @@
 (use ncurses srfi-25)
 (load "tetromino.scm")
 
-;; Tetris is scheme
+;; Tetris in scheme
 
 (define STARTX 0)
 (define STARTY 0)
@@ -21,6 +21,7 @@
 (define color-set! set-car!)
 (define display-set! set-cdr!)
 
+;;Function to display to the ncurses window the game play area.
 (define (tetra-display win area startx starty endx endy)
   (wclear win)
   (do ([i startx (add1 i)])
@@ -31,6 +32,9 @@
         (mvwaddch win j i CELL_CHAR))))
   (wrefresh win))
 
+;; If disp is set to true, this function sets the array where the block
+;; would be to be displayable. If false, erase the last position of the block
+;; from the grid until we get a change in state
 (define (update-state tetra disp area startx starty endx endy)
   (map (lambda (coord)
          (unless (or (>= (car coord) endx)
@@ -42,7 +46,9 @@
              ;;TODO add in color information
             )))
        (calc-offset (block-offset tetra) (block-coords tetra))))
-  
+ 
+;; The entry into the game. Set up the terminal and out playing grid, and 
+;; recurse until an exit status occurs.
 (define (main)
   ;;Settings for the terminal session
   (initscr)
@@ -57,6 +63,8 @@
   (set! lines (LINES))
   (set! ENDX (sub1 cols))
   (set! ENDY (sub1 lines))
+
+  ;;Start setting up the work area
   (let ([workarea (make-array (shape 0 cols 0 lines))])
     (do ([i 0 (add1 i)])
       ((>= i cols))
@@ -64,7 +72,9 @@
         ((>= j lines))
         (array-set! workarea i j (cons 0 #f))))
         (tetra-display (stdscr) workarea STARTX STARTY ENDX ENDY)
-        (let loop ([continue #t] [block (L-block)]) ;;Start the main game loop
+
+        ;;Start the main game loop
+        (let loop ([continue #t] [block (L-block)])
           (unless (not continue)
               (update-state block #f workarea STARTX STARTY ENDX ENDY)
               (case (getch)
