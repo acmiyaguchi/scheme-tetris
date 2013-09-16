@@ -74,7 +74,7 @@
 
   ;;Iterate through colors to create default color pairs
   (let set_colors ([color COLOR_RED])
-    (unless (eqv? color COLOR_WHITE)
+    (unless (eqv? color (add1 COLOR_WHITE))
       (init_pair color color COLOR_BLACK)
       (set_colors (add1 color))))
 
@@ -97,7 +97,9 @@
                 ((#\s) (set! block (move-block block 0 1)))
                 ((#\a) (set! block (move-block block -1 0)))
                 ((#\d) (set! block (move-block block 1 0)))
-                ((#\space) (set! block (rot-cw block))))
+                ((#\c) (set! block (new-tetra)))
+                ((#\space)  (set! block (rot-cw block))))
+              (set! block (move-block block 0 1))
               (update-state block #t workarea STARTX STARTY ENDX ENDY)
               (tetra-display (stdscr) workarea STARTX STARTY ENDX ENDY)
               (loop continue block))))

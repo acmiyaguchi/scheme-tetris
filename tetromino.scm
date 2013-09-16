@@ -5,26 +5,30 @@
         (import scheme chicken)
         (use ncurses))
 
-(use ncurses)
+(use ncurses extras)
 
-;;The tetromino block is a defined as a list structure
-;;with the first half describing the current position on the grid 
-;;and the color to display it as. The second half contains a list 
-;;of coordinates that define the shape. 
+;; The tetromino block is a defined as a list structure
+;; with the first half describing the current position on the grid 
+;; and the color to display it as. The second half contains a list 
+;; of coordinates that define the shape. 
 ;;
-;;(COLOR, OFFSET-PAIR) . (P1, P2, P3, P4)
+;; (COLOR, OFFSET-PAIR) . (P1, P2, P3, P4)
 ;;
-;;We can access the individual elements using the following definitions
+;; We can access the individual elements using the following definitions
 
 (define block-color caar)   ;;First element of first pair
 (define block-offset cdar)  ;;Second element of first pair
 (define block-coords cadr)  ;;First element of second pair
 
-;;All coordinate pairs are in the positive xy plane, which starts 
-;;from the upper left and goes to the bottom right of the screen.
+;; We should also define the max blocks
+
+(define MAX_TETRA 7)
+
+;; All coordinate pairs are in the positive xy plane, which starts 
+;; from the upper left and goes to the bottom right of the screen.
  
-;;A template for creating the basic building tetromino block
-;;TODO: Change the offset for a real game
+;; A template for creating the basic building tetromino block
+;; TODO: Change the offset for a real game
 ;;
 (define (make-tetromino color x1 y1 x2 y2 x3 y3 x4 y4)
   (list (cons color (cons 0 0)) ;;associated metadata
@@ -39,7 +43,7 @@
 ;;
 ;; ## ## ## ##
 ;; 
-(define (L-block)
+(define (I-block)
   (make-tetromino 
     COLOR_RED 0 0 1 0 2 0 3 0))
 
@@ -93,6 +97,17 @@
 
 
 ;; Below are functions that work on the tetromino block datatype
+
+;; Generate a random tetromino
+(define (new-tetra)
+  (case (random MAX_TETRA)
+    ((0) (I-block))
+    ((1) (J-block))
+    ((2) (L-block))
+    ((3) (O-block))
+    ((4) (S-block))
+    ((5) (T-block))
+    ((6) (Z-block))))
 
 ;; Return a list of the actual coordinates of the blocks. The offset is applied to
 ;; each coordinate base to get the relative position of the block to the origin. 
