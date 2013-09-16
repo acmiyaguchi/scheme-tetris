@@ -33,8 +33,11 @@
     ((>= i endx))
     (do ([j starty (add1 j)])
       ((>= j endy))
-      (unless (not (display? (array-ref area i j)))
-        (mvwaddch win j i CELL_CHAR))))
+      (let ([cell (array-ref area i j)])
+        (unless (not (display? cell))
+          (wattron win (COLOR_PAIR (color cell)))
+          (mvwaddch win j i CELL_CHAR)
+          (wattroff win (COLOR_PAIR (color cell)))))))
   (wrefresh win))
 
 ;; If disp is set to true, this function sets the array where the block
@@ -48,15 +51,15 @@
                        (< (cdr coord) starty))
            (let ([cell (array-ref area (car coord) (cdr coord))])
              (display-set! cell disp)
-             ;;TODO add in color information
-            )))
+             (color-set! cell (caar tetra)))))
        (calc-offset tetra)))
- 
+
 ;; The entry into the game. Set up the terminal and out playing grid, and 
 ;; recurse until an exit status occurs.
 (define (main)
   ;;Settings for the terminal session
-  (initscr)
+  (initscr)     ;; Initialize the screen
+  (start_color) ;; Start the terminal in color mode
   (noecho)
   (cbreak)
   (curs_set 0)
@@ -68,6 +71,12 @@
   (set! lines (LINES))
   (set! ENDX (sub1 cols))
   (set! ENDY (sub1 lines))
+
+  ;;Iterate through colors to create default color pairs
+  (let set_colors ([color COLOR_RED])
+    (unless (eqv? color COLOR_WHITE)
+      (init_pair color color COLOR_BLACK)
+      (set_colors (add1 color))))
 
   ;;Start setting up the work area
   (let ([workarea (make-array (shape 0 cols 0 lines))])
@@ -96,3 +105,5 @@
   (nocbreak)
   (curs_set 1)
   (endwin))
+
+(main)
