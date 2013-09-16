@@ -5,6 +5,8 @@
         (import scheme chicken)
         (use ncurses))
 
+(use ncurses)
+
 ;;The tetromino block is a defined as a list structure
 ;;with the first half describing the current position on the grid 
 ;;and the color to display it as. The second half contains a list 
@@ -92,25 +94,23 @@
 
 ;; Below are functions that work on the tetromino block datatype
 
-;; Return the actual coordinates of the blocks. The offset is applied to
-;; each coordinate base to get the relative position of the block to the 
-;; origin. 
+;; Return a list of the actual coordinates of the blocks. The offset is applied to
+;; each coordinate base to get the relative position of the block to the origin. 
 ;;
-;; TODO: Take and return the basic tetra block
-;;
-(define (calc-offset off ls)
-  (map (lambda (item) (cons (+ (car item) (car off))
-                            (+ (cdr item) (cdr off))))
-       ls))
+(define (calc-offset tetra)
+  (let ([off (block-offset tetra)])
+    (map (lambda (item) (cons (+ (car item) (car off))
+                              (+ (cdr item) (cdr off))))
+         (block-coords tetra))))
 
 ;;Displace the block by displacing the current offset by a delta x
-;;and a delta y. 
-;;
-;;TODO: Return a modified tetra block
+;;and a delta y. Returns a tetra block. 
 ;;
 (define (move-block tetra dx dy)
-  (cons (+ (cadar tetra) dx)
-        (+ (cddar tetra) dy)))
+  (list (cons (block-color tetra)
+              (cons (+ (cadar tetra) dx)
+                    (+ (cddar tetra) dy)))
+        (block-coords tetra)))
 
 ;; Rotate a block clockwise. We transform the block based on its position
 ;; from a relative origin. Takes a basic tetra block and returns a modified
@@ -135,3 +135,9 @@
         (map(lambda (pair)
               (cons (cdr pair) (* (car pair) -1)))
           (block-coords tetra))))
+
+;; Quick tests
+
+(let ((x (L-block)))
+  (display x)
+  (display (rot-cw x)))

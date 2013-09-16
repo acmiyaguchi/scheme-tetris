@@ -50,7 +50,7 @@
              (display-set! cell disp)
              ;;TODO add in color information
             )))
-       (calc-offset (block-offset tetra) (block-coords tetra))))
+       (calc-offset tetra)))
  
 ;; The entry into the game. Set up the terminal and out playing grid, and 
 ;; recurse until an exit status occurs.
@@ -84,10 +84,10 @@
               (update-state block #f workarea STARTX STARTY ENDX ENDY)
               (case (getch)
                 ((#\q) (set! continue #f))
-                ((#\w) (set! (block-offset block) (move-block block 0 -1)))
-                ((#\s) (set! (block-offset block) (move-block block 0 1)))
-                ((#\a) (set! (block-offset block) (move-block block -1 0)))
-                ((#\d) (set! (block-offset block) (move-block block 1 0)))
+                ((#\w) (set! block (move-block block 0 -1)))
+                ((#\s) (set! block (move-block block 0 1)))
+                ((#\a) (set! block (move-block block -1 0)))
+                ((#\d) (set! block (move-block block 1 0)))
                 ((#\space) (set! block (rot-cw block))))
               (update-state block #t workarea STARTX STARTY ENDX ENDY)
               (tetra-display (stdscr) workarea STARTX STARTY ENDX ENDY)
