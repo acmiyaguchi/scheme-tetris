@@ -40,19 +40,35 @@
           (wattroff win (COLOR_PAIR (color cell)))))))
   (wrefresh win))
 
+;; Check if an item is within boundary limits
+(define (out-limits? pair startx starty endx endy)
+  (or (>= (car coord) endx)
+      (>= (cdr coord) endy)
+      (< (car coord) startx)
+      (< (cdr coord) starty)))
+
 ;; If disp is set to true, this function sets the array where the block
 ;; would be to be displayable. If false, erase the last position of the block
 ;; from the grid until we get a change in state
 (define (update-state tetra disp area startx starty endx endy)
   (map (lambda (coord)
-         (unless (or (>= (car coord) endx)
-                       (>= (cdr coord) endy)
-                       (< (car coord) startx)
-                       (< (cdr coord) starty))
+         (unless (out-limits? coord startx starty endx endy)
            (let ([cell (array-ref area (car coord) (cdr coord))])
              (display-set! cell disp)
              (color-set! cell (caar tetra)))))
        (calc-offset tetra)))
+
+;; Check if the block needs to stop moving, from either touching the ground
+;; or from touching another block
+;;
+(define (check-condition tetra area startx starty endx endy)
+  (let item ([coordlist (calc-offset tetra)])
+    (cond ((null? coordlist) '())
+          ((out-limits? (car coordlist) startx starty endx endy) #f)
+          ((display? (array-ref area (caar coordlist) (cdar coordlist))) #f)
+          (else
+            (item (cdr coordlist)))))
+  #t)
 
 ;; The entry into the game. Set up the terminal and out playing grid, and 
 ;; recurse until an exit status occurs.
