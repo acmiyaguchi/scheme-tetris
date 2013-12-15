@@ -60,7 +60,6 @@
 
 ;; Check if the block needs to stop moving, from either touching the ground
 ;; or from touching another block
-;;
 (define (check-condition tetra area)
   (let item ([coordlist (calc-offset tetra)])
     (cond ((null? coordlist) #t)    ; All coordinates are within the grid
@@ -69,8 +68,18 @@
           (else
             (item (cdr coordlist))))))
 
-;; Handle the input and the placement of the blocks
-;(define (input 
+;; Handle the inputs. Returns a new block based on input. If we quit, we will
+;; return a boolean instead.
+(define (input block) 
+  (case (getch)   ; Get user input
+    ((#\q) #f)
+    ((#\w) (move-block block 0 -1))
+    ((#\s) (move-block block 0 1))
+    ((#\a) (move-block block -1 0))
+    ((#\d) (move-block block 1 0))
+    ((#\c) (new-tetra))
+    ((#\space)  (rot-cw block))
+    (else block)))
 
 ;; The entry into the game. Set up the terminal and out playing grid, and 
 ;; recurse until an exit status occurs.
@@ -110,15 +119,15 @@
           (unless (not continue)
             ;; Remove the position of the block from the grid until we update it
             (update-state block #f workarea)
-            (case (getch)   ; Get user input
-              ((#\q) (set! continue #f))
-              ((#\w) (set! block (move-block block 0 -1)))
-              ((#\s) (set! block (move-block block 0 1)))
-              ((#\a) (set! block (move-block block -1 0)))
-              ((#\d) (set! block (move-block block 1 0)))
-              ((#\c) (set! block (new-tetra)))
-              ((#\space)  (set! block (rot-cw block))))
-            (set! block (move-block block 0 1))
+            
+            ;; Update the block state based on input
+            (let ((result (input block)))
+              (if (boolean? result) 
+                (set! continue result)  ; Exit out of our game loop     
+                (set! block result)))   ; Otherwise update our block
+            
+            (set! block (move-block block 0 1))   ; Move our block anyways
+            
             ;; Update the state of the grid now
             (update-state block #t workarea)
             (tetra-display (stdscr) workarea)
