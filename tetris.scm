@@ -26,6 +26,10 @@
 (define color-set! set-car!)
 (define display-set! set-cdr!)
 
+(define ILLEGAL     0)
+(define NEXT      1)
+(define CONTINUE    2)
+
 ;;Function to display to the ncurses window the game play area.
 (define (tetra-display win area)
   (wclear win)
@@ -40,12 +44,20 @@
           (wattroff win (COLOR_PAIR (color cell)))))))
   (wrefresh win))
 
+;; Check if item is within X boundaries
+(define (out-x? coord)
+  (or (>= (car coord) ENDX)
+      (< (car coord) STARTX)))
+
+;; Check if item is within Y boundaries
+(define (out-y? coord)
+  (or (>= (cdr coord) ENDY)
+      (< (cdr coord) STARTY)))
+
 ;; Check if an item is within boundary limits
 (define (out-limits? coord)
-  (or (>= (car coord) ENDX)
-      (>= (cdr coord) ENDY)
-      (< (car coord) STARTX)
-      (< (cdr coord) STARTY)))
+  (or (out-x? coord)
+      (out-y? coord)))
 
 ;; If disp is set to true, this function sets the array where the block
 ;; would be to be displayable. If false, erase the last position of the block
@@ -62,9 +74,10 @@
 ;; or from touching another block
 (define (check-condition tetra area)
   (let item ([coordlist (calc-offset tetra)])
-    (cond ((null? coordlist) #t)    ; All coordinates are within the grid
-          ((out-limits? (car coordlist)) #f)
-          ((display? (array-ref area (caar coordlist) (cdar coordlist))) #f)
+    (cond ((null? coordlist) CONTINUE)    ; All coordinates are within the grid
+          ((out-x? (car coordlist)) ILLEGAL)
+          ((out-y? (car coordlist)) NEXT)
+          ((display? (array-ref area (caar coordlist) (cdar coordlist))) NEXT)
           (else
             (item (cdr coordlist))))))
 
@@ -115,23 +128,29 @@
         (tetra-display (stdscr) workarea)
 
         ;;Start the main game loop
-        (let loop ([continue #t] [block (L-block)])
+        (let loop ([continue #t] [newblock? #t] [block (L-block)])
           (unless (not continue)
-            ;; Remove the position of the block from the grid until we update it
-            (update-state block #f workarea)
+            (if newblock?
+              (begin 
+                (set! block (move-block (new-tetra) 4 1))
+                (set! newblock? #f))
+              ;; Otherwise, remove the block from the workarea
+              (update-state block #f workarea))
             
             ;; Update the block state based on input
             (let ((result (input block)))
               (if (boolean? result) 
-                (set! continue result)  ; Exit out of our game loop     
-                (set! block result)))   ; Otherwise update our block
-            
-            (set! block (move-block block 0 1))   ; Move our block anyways
-            
+                (set! continue result)  ; Exit out of our game loop   
+                ;; We do nothing during the illegal case
+                (case (check-condition result workarea)
+                  ((NEXT) (set! newblock? #t))
+                  ((CONTINUE) (set! block result)))))
+           
+            (set! block (move-block block 0 1))
             ;; Update the state of the grid now
             (update-state block #t workarea)
             (tetra-display (stdscr) workarea)
-            (loop continue block))))    ; Keep looping
+            (loop continue newblock? block))))    ; Keep looping
   (echo)
   (nocbreak)
   (curs_set 1)

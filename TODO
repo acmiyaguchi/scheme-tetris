@@ -1,0 +1,2 @@
+The case statement after checking for boundary conditions doesnt work.
+The block will continue to drop down and wont respawn.
