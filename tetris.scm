@@ -27,12 +27,12 @@
 (define display-set! set-cdr!)
 
 ;;Function to display to the ncurses window the game play area.
-(define (tetra-display win area startx starty endx endy)
+(define (tetra-display win area)
   (wclear win)
-  (do ([i startx (add1 i)])
-    ((>= i endx))
-    (do ([j starty (add1 j)])
-      ((>= j endy))
+  (do ([i STARTX (add1 i)])
+    ((>= i ENDX))
+    (do ([j STARTY (add1 j)])
+      ((>= j ENDY))
       (let ([cell (array-ref area i j)])
         (unless (not (display? cell))
           (wattron win (COLOR_PAIR (color cell)))
@@ -41,18 +41,18 @@
   (wrefresh win))
 
 ;; Check if an item is within boundary limits
-(define (out-limits? pair startx starty endx endy)
-  (or (>= (car coord) endx)
-      (>= (cdr coord) endy)
-      (< (car coord) startx)
-      (< (cdr coord) starty)))
+(define (out-limits? coord)
+  (or (>= (car coord) ENDX)
+      (>= (cdr coord) ENDY)
+      (< (car coord) STARTX)
+      (< (cdr coord) STARTY)))
 
 ;; If disp is set to true, this function sets the array where the block
 ;; would be to be displayable. If false, erase the last position of the block
 ;; from the grid until we get a change in state
-(define (update-state tetra disp area startx starty endx endy)
+(define (update-state tetra disp area)
   (map (lambda (coord)
-         (unless (out-limits? coord startx starty endx endy)
+         (unless (out-limits? coord)
            (let ([cell (array-ref area (car coord) (cdr coord))])
              (display-set! cell disp)
              (color-set! cell (caar tetra)))))
@@ -61,21 +61,23 @@
 ;; Check if the block needs to stop moving, from either touching the ground
 ;; or from touching another block
 ;;
-(define (check-condition tetra area startx starty endx endy)
+(define (check-condition tetra area)
   (let item ([coordlist (calc-offset tetra)])
-    (cond ((null? coordlist) '())
-          ((out-limits? (car coordlist) startx starty endx endy) #f)
+    (cond ((null? coordlist) #t)    ; All coordinates are within the grid
+          ((out-limits? (car coordlist)) #f)
           ((display? (array-ref area (caar coordlist) (cdar coordlist))) #f)
           (else
-            (item (cdr coordlist)))))
-  #t)
+            (item (cdr coordlist))))))
+
+;; Handle the input and the placement of the blocks
+;(define (input 
 
 ;; The entry into the game. Set up the terminal and out playing grid, and 
 ;; recurse until an exit status occurs.
 (define (main)
   ;;Settings for the terminal session
-  (initscr)     ;; Initialize the screen
-  (start_color) ;; Start the terminal in color mode
+  (initscr)     ; Initialize the screen
+  (start_color) ; Start the terminal in color mode
   (noecho)
   (cbreak)
   (curs_set 0)
@@ -101,24 +103,26 @@
       (do([j 0 (add1 j)])
         ((>= j lines))
         (array-set! workarea i j (cons 0 #f))))
-        (tetra-display (stdscr) workarea STARTX STARTY ENDX ENDY)
+        (tetra-display (stdscr) workarea)
 
         ;;Start the main game loop
         (let loop ([continue #t] [block (L-block)])
           (unless (not continue)
-              (update-state block #f workarea STARTX STARTY ENDX ENDY)
-              (case (getch)
-                ((#\q) (set! continue #f))
-                ((#\w) (set! block (move-block block 0 -1)))
-                ((#\s) (set! block (move-block block 0 1)))
-                ((#\a) (set! block (move-block block -1 0)))
-                ((#\d) (set! block (move-block block 1 0)))
-                ((#\c) (set! block (new-tetra)))
-                ((#\space)  (set! block (rot-cw block))))
-              (set! block (move-block block 0 1))
-              (update-state block #t workarea STARTX STARTY ENDX ENDY)
-              (tetra-display (stdscr) workarea STARTX STARTY ENDX ENDY)
-              (loop continue block))))
+            ;; Remove the position of the block from the grid until we update it
+            (update-state block #f workarea)
+            (case (getch)   ; Get user input
+              ((#\q) (set! continue #f))
+              ((#\w) (set! block (move-block block 0 -1)))
+              ((#\s) (set! block (move-block block 0 1)))
+              ((#\a) (set! block (move-block block -1 0)))
+              ((#\d) (set! block (move-block block 1 0)))
+              ((#\c) (set! block (new-tetra)))
+              ((#\space)  (set! block (rot-cw block))))
+            (set! block (move-block block 0 1))
+            ;; Update the state of the grid now
+            (update-state block #t workarea)
+            (tetra-display (stdscr) workarea)
+            (loop continue block))))    ; Keep looping
   (echo)
   (nocbreak)
   (curs_set 1)
