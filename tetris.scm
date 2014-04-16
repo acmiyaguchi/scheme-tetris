@@ -94,17 +94,28 @@
     ((#\space)  (rot-cw block))
     (else block)))
 
+;; Initialization of the game
+(define (setup)
+  (initscr) ; Initialize the screen
+  (start_color) ; Start the terminal in color mode
+  (noecho)  ; Turns off echoing of typed characters
+  (cbreak)  ; Disable buffered of input
+  (curs_set 0)  ; Hide the cursor
+  (keypad (stdscr) #t)  ; Allow input on the screen
+  (timeout TIME_OUT))   ; Set timeout
+
+;; Restore the terminal values that have been overwritten
+(define (destroy)
+  (echo)
+  (nocbreak)
+  (curs_set 1)
+  (endwin))
+
 ;; The entry into the game. Set up the terminal and out playing grid, and 
 ;; recurse until an exit status occurs.
 (define (main)
-  ;;Settings for the terminal session
-  (initscr)     ; Initialize the screen
-  (start_color) ; Start the terminal in color mode
-  (noecho)
-  (cbreak)
-  (curs_set 0)
-  (keypad (stdscr) #t)
-  (timeout TIME_OUT)
+  ;; Setup the terminal for the game
+  (setup)
 
   ;;Settings for the window
   (set! cols (COLS))
@@ -151,9 +162,6 @@
             (update-state block #t workarea)
             (tetra-display (stdscr) workarea)
             (loop continue newblock? block))))    ; Keep looping
-  (echo)
-  (nocbreak)
-  (curs_set 1)
-  (endwin))
-
+  ;; Restore the terminal values
+  (destroy))
 (main)
