@@ -84,15 +84,15 @@
 ;; Handle the inputs. Returns a new block based on input. If we quit, we will
 ;; return a boolean instead.
 (define (input block) 
-  (case (getch)   ; Get user input
-    ((#\q) #f)
-    ((#\w) (move-block block 0 -1))
-    ((#\s) (move-block block 0 1))
-    ((#\a) (move-block block -1 0))
-    ((#\d) (move-block block 1 0))
-    ((#\c) (new-tetra))
-    ((#\space)  (rot-cw block))
-    (else block)))
+    (case (getch)
+      ((#\q) #f)
+      ((#\w) (move-block block 0 -1))
+      ((#\s) (move-block block 0 1))
+      ((#\a) (move-block block -1 0))
+      ((#\d) (move-block block 1 0))
+      ((#\c) (new-tetra))
+      ((#\space)  (rot-cw block))
+      (else block)))
 
 ;; Initialization of the game
 (define (setup)
@@ -149,13 +149,10 @@
               (update-state block #f workarea))
             
             ;; Update the block state based on input
-            (let ((result (input block)))
+            (let ([result (input block)])
               (if (boolean? result) 
                 (set! continue result)  ; Exit out of our game loop   
-                ;; We do nothing during the illegal case
-                (case (check-condition result workarea)
-                  ((NEXT) (set! newblock? #t))
-                  ((CONTINUE) (set! block result)))))
+                (set! block result)))   ; Continue with the loop
            
             (set! block (move-block block 0 1))
             ;; Update the state of the grid now
