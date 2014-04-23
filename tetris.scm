@@ -30,15 +30,6 @@
 (define NEXT      1)
 (define CONTINUE    2)
 
-;;Create a boxed window screen
-(define (create-window height width starty startx)
-  (let ([local_win (newwin height width starty startx)])
-    (wattron local_win (COLOR_PAIR COLOR_RED))
-    (box local_win 0 0)
-    (wattroff local_win (COLOR_PAIR COLOR_RED))
-    (wrefresh local_win)
-    local_win))
-
 ;;Function to display to the ncurses window the game play area.
 (define (tetra-display win area)
   (wclear win)
@@ -49,8 +40,10 @@
       (let ([cell (array-ref area i j)])
         (unless (not (display? cell))
           (wattron win (COLOR_PAIR (color cell)))
-          (mvwaddch win j i CELL_CHAR)
+          (mvwaddch win j (* i 2) CELL_CHAR)
+          (mvwaddch win j (add1 (* i 2)) CELL_CHAR )
           (wattroff win (COLOR_PAIR (color cell)))))))
+  (box win 0 0)
   (wrefresh win))
 
 ;; Check if item is within X boundaries
@@ -140,7 +133,7 @@
 
   ;;Start setting up the work area
   (let ([workarea (make-array (shape 0 cols 0 lines))] ; Working grid
-        [win (create-window 22 10 0 5)])               ; Display window
+        [win (newwin 24 20 0 5)])               ; Display window
     (do ([i 0 (add1 i)])
       ((>= i cols))
       (do([j 0 (add1 j)])
