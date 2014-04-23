@@ -30,6 +30,15 @@
 (define NEXT      1)
 (define CONTINUE    2)
 
+;;Create a boxed window screen
+(define (create-window height width starty startx)
+  (let ([local_win (newwin height width starty startx)])
+    (wattron local_win (COLOR_PAIR COLOR_RED))
+    (box local_win 0 0)
+    (wattroff local_win (COLOR_PAIR COLOR_RED))
+    (wrefresh local_win)
+    local_win))
+
 ;;Function to display to the ncurses window the game play area.
 (define (tetra-display win area)
   (wclear win)
@@ -130,13 +139,14 @@
       (set_colors (add1 color))))
 
   ;;Start setting up the work area
-  (let ([workarea (make-array (shape 0 cols 0 lines))])
+  (let ([workarea (make-array (shape 0 cols 0 lines))] ; Working grid
+        [win (create-window 22 10 0 5)])               ; Display window
     (do ([i 0 (add1 i)])
       ((>= i cols))
       (do([j 0 (add1 j)])
         ((>= j lines))
         (array-set! workarea i j (cons 0 #f))))
-        (tetra-display (stdscr) workarea)
+        (tetra-display win workarea)
 
         ;;Start the main game loop
         (let loop ([continue #t] [newblock? #t] [block (L-block)])
@@ -157,7 +167,7 @@
             (set! block (move-block block 0 1))
             ;; Update the state of the grid now
             (update-state block #t workarea)
-            (tetra-display (stdscr) workarea)
+            (tetra-display win workarea)
             (loop continue newblock? block))))    ; Keep looping
   ;; Restore the terminal values
   (destroy))
